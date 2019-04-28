@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Baking App</string>
+    <string name="recipe_card_name_text">Nutella Pie</string>
+    <string name="step_card_name_text">Step 01</string>
+    <string name="ingredients_card_name_text">Ingredients</string>
+    <string name="button_prev_text">Prev</string>
+    <string name="button_next_text">Next</string>
+    <string name="ingredient_quantity_text">15</string>
+    <string name="ingredient_measure_text">g</string>
+    <string name="ingredient_ingredient_text">Sugar</string>
+    <string name="title_ingredients">Ingredients</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="recipe_name_widget_text">My Cake</string>
+    <string name="no_internet_connection">No Internet Connection</string>
+</resources>

@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:weightSum="2"
+    android:id="@+id/widgetContainer"
+    android:background="#09C"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/recipe_name_widget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:text="@string/recipe_name_widget_text"
+        android:textAlignment="center"
+        android:textSize="16sp" />
+
+    <ListView
+        android:clickable="true"
+        android:focusable="true"
+        android:id="@+id/list_view_widget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp" />
+</LinearLayout>
