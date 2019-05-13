@@ -111,4 +111,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public void sendToastMessage() {
         Toast.makeText(this, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
     }
+
+    public RecyclerView getRecyclerView() {
+        return mRecyclerView;
+    }
 }

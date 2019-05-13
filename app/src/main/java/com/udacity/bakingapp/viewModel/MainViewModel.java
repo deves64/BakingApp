@@ -11,11 +11,18 @@ import java.util.List;
 public class MainViewModel extends ViewModel {
     private LiveData<List<Recipe>> mLiveDataRecipes;
 
+    protected RecipeRepository mRecipeRepository;
+
     public MainViewModel(RecipeRepository recipeRepository) {
-        mLiveDataRecipes = recipeRepository.getRecipes();
+        mRecipeRepository = recipeRepository;
+        mLiveDataRecipes = mRecipeRepository.getRecipes();
     }
 
     public LiveData<List<Recipe>> getRecipes() {
         return mLiveDataRecipes;
+    }
+
+    public RecipeRepository getmRecipeRepository() {
+        return mRecipeRepository;
     }
 }

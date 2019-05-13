@@ -17,9 +17,12 @@ public class RecipeRepository {
     private BakingService mBakingService;
     private AppExecutors mAppExecutors;
 
+    private Integer mRequestOpen;
+
     public RecipeRepository(BakingService bakingService, AppExecutors appExecutors) {
         mBakingService = bakingService;
         mAppExecutors = appExecutors;
+        mRequestOpen = 0;
     }
 
     public LiveData<List<Recipe>> getRecipes() {
@@ -32,6 +35,7 @@ public class RecipeRepository {
 
                 if (!internet) {
                     recipesLiveData.postValue(null);
+                    mRequestOpen--;
                     return;
                 }
 
@@ -49,13 +53,16 @@ public class RecipeRepository {
                     }
 
                     recipesLiveData.postValue(recipes);
+                    mRequestOpen--;
                 }
                 catch (IOException e) {
                     recipesLiveData.postValue(null);
+                    mRequestOpen--;
                 }
             }
         });
 
+        mRequestOpen++;
         return recipesLiveData;
     }
 
@@ -69,6 +76,7 @@ public class RecipeRepository {
 
                 if (!internet) {
                     recipeLiveData.postValue(null);
+                    mRequestOpen--;
                     return;
                 }
 
@@ -87,13 +95,16 @@ public class RecipeRepository {
                     Recipe recipe = recipes.get(id);
 
                     recipeLiveData.postValue(recipe);
+                    mRequestOpen--;
                 }
                 catch (IOException e) {
                     recipeLiveData.postValue(null);
+                    mRequestOpen--;
                 }
             }
         });
 
+        mRequestOpen++;
         return recipeLiveData;
     }
 
@@ -107,6 +118,7 @@ public class RecipeRepository {
 
                 if (!internet) {
                     recipesLiveData.postValue(null);
+                    mRequestOpen--;
                     return;
                 }
 
@@ -130,13 +142,16 @@ public class RecipeRepository {
                     }
 
                     recipesLiveData.postValue(steps);
+                    mRequestOpen--;
                 }
                 catch (IOException e) {
                     recipesLiveData.postValue(null);
+                    mRequestOpen--;
                 }
             }
         });
 
+        mRequestOpen++;
         return recipesLiveData;
     }
 
@@ -150,5 +165,9 @@ public class RecipeRepository {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public Integer getmRequestOpen() {
+        return mRequestOpen;
     }
 }

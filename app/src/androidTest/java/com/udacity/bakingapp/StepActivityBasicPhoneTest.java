@@ -1,7 +1,7 @@
 package com.udacity.bakingapp;
 
+import android.content.Intent;
 import android.support.test.espresso.Espresso;
-import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -14,26 +14,29 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 @RunWith(AndroidJUnit4.class)
-public class MainActivityBasicPhoneTest {
+public class StepActivityBasicPhoneTest {
 
     private RecipeAdapterResource mRecipeAdapterResource;
 
     @Rule
-    public ActivityTestRule<MainActivity> mainActivityActivityTestRule
-            = new ActivityTestRule<>(MainActivity.class);
+    public ActivityTestRule<StepActivity> recipeActivityActivityTestRule
+            = new ActivityTestRule<>(StepActivity.class, true, false);
 
     @Before
     public void registerIdlingResource() {
-        RecipeRepository recipeRepository = (RecipeRepository) mainActivityActivityTestRule
+        Intent intent = new Intent();
+        intent.putExtra(RecipeActivity.EXTRA_RECIPE_ID, 2);
+        intent.putExtra(StepActivity.EXTRA_STEP_ID, 2);
+        recipeActivityActivityTestRule.launchActivity(intent);
+
+        RecipeRepository recipeRepository = (RecipeRepository) recipeActivityActivityTestRule
                 .getActivity()
-                .mainViewModel
+                .stepViewModel
                 .getmRecipeRepository();
 
         mRecipeAdapterResource = new RecipeAdapterResource(recipeRepository);
@@ -42,17 +45,8 @@ public class MainActivityBasicPhoneTest {
     }
 
     @Test
-    public void isListRecyclerViewPresent() {
-        onView(withContentDescription(R.string.recipe_menu))
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void clickRecipeListItem_openRecipeActivity() {
-        onView(withContentDescription(R.string.recipe_menu))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(3, click()));
-
-        onView(withId(R.id.steps_fragment))
+    public void clickStepListItem_openStepActivity() {
+        onView(withId(R.id.step_fragment))
                 .check(matches(isDisplayed()));
     }
 

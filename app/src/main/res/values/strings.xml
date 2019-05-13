@@ -9,6 +9,7 @@
     <string name="ingredient_measure_text">g</string>
     <string name="ingredient_ingredient_text">Sugar</string>
     <string name="title_ingredients">Ingredients</string>
+    <string name="recipe_menu">recipe_menu</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

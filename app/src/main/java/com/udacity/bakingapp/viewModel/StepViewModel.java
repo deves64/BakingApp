@@ -13,7 +13,10 @@ public class StepViewModel extends ViewModel {
     private LiveData<List<Step>> mLiveDataSteps;
     private LiveData<Recipe> mLiveDataRecipe;
 
+    protected RecipeRepository mRecipeRepository;
+
     public StepViewModel(RecipeRepository recipeRepository, int id) {
+        mRecipeRepository = recipeRepository;
         mLiveDataSteps = recipeRepository.getSteps(id);
         mLiveDataRecipe = recipeRepository.getRecipe(id);
     }
@@ -24,6 +27,10 @@ public class StepViewModel extends ViewModel {
 
     public LiveData<Recipe> getRecipe() {
         return  mLiveDataRecipe;
+    }
+
+    public RecipeRepository getmRecipeRepository() {
+        return mRecipeRepository;
     }
 }
 

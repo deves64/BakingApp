@@ -1,7 +1,7 @@
 package com.udacity.bakingapp;
 
+import android.content.Intent;
 import android.support.test.espresso.Espresso;
-import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -15,25 +15,28 @@ import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 @RunWith(AndroidJUnit4.class)
-public class MainActivityBasicPhoneTest {
+public class RecipeActivityBasicPhoneTest {
 
     private RecipeAdapterResource mRecipeAdapterResource;
 
     @Rule
-    public ActivityTestRule<MainActivity> mainActivityActivityTestRule
-            = new ActivityTestRule<>(MainActivity.class);
+    public ActivityTestRule<RecipeActivity> recipeActivityActivityTestRule
+            = new ActivityTestRule<>(RecipeActivity.class, true, false);
 
     @Before
     public void registerIdlingResource() {
-        RecipeRepository recipeRepository = (RecipeRepository) mainActivityActivityTestRule
+        Intent intent = new Intent();
+        intent.putExtra(RecipeActivity.EXTRA_RECIPE_ID, 2);
+        recipeActivityActivityTestRule.launchActivity(intent);
+
+        RecipeRepository recipeRepository = (RecipeRepository) recipeActivityActivityTestRule
                 .getActivity()
-                .mainViewModel
+                .detailViewModel
                 .getmRecipeRepository();
 
         mRecipeAdapterResource = new RecipeAdapterResource(recipeRepository);
@@ -42,18 +45,12 @@ public class MainActivityBasicPhoneTest {
     }
 
     @Test
-    public void isListRecyclerViewPresent() {
-        onView(withContentDescription(R.string.recipe_menu))
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void clickRecipeListItem_openRecipeActivity() {
-        onView(withContentDescription(R.string.recipe_menu))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(3, click()));
-
+    public void clickStepListItem_openStepActivity() {
         onView(withId(R.id.steps_fragment))
-                .check(matches(isDisplayed()));
+                .check(matches(isDisplayed()));/*
+
+        onView(withId(R.id.steps_recycler_view))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(3, click()));*/
     }
 
     @After

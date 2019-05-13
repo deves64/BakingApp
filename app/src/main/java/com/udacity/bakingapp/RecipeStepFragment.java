@@ -1,8 +1,12 @@
 package com.udacity.bakingapp;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Observer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,6 +39,7 @@ import com.udacity.bakingapp.vo.Step;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -54,6 +59,8 @@ public class RecipeStepFragment extends Fragment implements ExoPlayer.EventListe
     private ImageView mThumbnail;
 
     private AppExecutors mAppExecutors;
+
+    private Boolean isPopulatingData = false;
 
     public RecipeStepFragment() {
         // Required empty public constructor
@@ -108,7 +115,7 @@ public class RecipeStepFragment extends Fragment implements ExoPlayer.EventListe
             mPlayerView.setVisibility(View.VISIBLE);
             TrackSelector trackSelector = new DefaultTrackSelector();
             LoadControl loadControl = new DefaultLoadControl();
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance(this.getContext(), trackSelector, loadControl);
+            mExoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
             mPlayerView.setPlayer(mExoPlayer);
 
             // Set the ExoPlayer.EventListener to this activity.
@@ -148,6 +155,7 @@ public class RecipeStepFragment extends Fragment implements ExoPlayer.EventListe
             mExoPlayer.release();
             mExoPlayer = null;
             Log.v("releasePlayer", "TRUE");
+            isPopulatingData = false;
         }
     }
 
@@ -178,7 +186,12 @@ public class RecipeStepFragment extends Fragment implements ExoPlayer.EventListe
     @Override
     public void onPause() {
         super.onPause();
-        Log.v("onPause", "TRUE");
+        releasePlayer();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
         releasePlayer();
     }
 
@@ -239,86 +252,120 @@ public class RecipeStepFragment extends Fragment implements ExoPlayer.EventListe
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        populateData();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+        populateData();
+    }
 
-        mAppExecutors.getmNetworkIo().execute(new Runnable() {
+    private void populateData() {
+        if (mStep == null) {
+            return;
+        }
+
+        if (mDescription != null) {
+            mDescription.setText(mStep.getDescription());
+        }
+
+        if (isPopulatingData) {
+            return;
+        }
+
+        LiveData<URLConnection> urlConnectionLiveData = getMediaUrl(mStep);
+        urlConnectionLiveData.observe(this, new Observer<URLConnection>() {
             @Override
-            public void run() {
-                if (!isInternetConnectionAvailable()) {
+            public void onChanged(@Nullable URLConnection urlConnection) {
+                if (urlConnection == null) {
                     return;
                 }
 
-                if (mStep == null) {
-                    return;
-                }
+                String type = urlConnection.getHeaderField("Content-Type");
 
-                if (mDescription != null) {
-                    mAppExecutors.getmMainThread().execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            mDescription.setText(mStep.getDescription());
-                        }
-                    });
-                }
-
-                if (mStep.getVideoUrl() != null) {
-                    if (!mStep.getVideoUrl().isEmpty()) {
-                        if (isVideo(mStep.getVideoUrl())) {
-                            mAppExecutors.getmMainThread().execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    initializePlayer(Uri.parse(mStep.getVideoUrl()));
-                                }
-                            });
-
-                            return;
-                        }
+                if (type.equals("video/mp4")) {
+                    try {
+                        URL url = urlConnection.getURL();
+                        Uri uri = Uri.parse(url.toString());
+                        initializePlayer(uri);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
-
-                if (mStep.getThumbnailUrl() != null) {
-                    if (mStep.getThumbnailUrl().isEmpty()) {
-                        return;
-                    }
-
-                    if (isVideo(mStep.getThumbnailUrl())) {
-                        mAppExecutors.getmMainThread().execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                initializePlayer(Uri.parse(mStep.getThumbnailUrl()));
-                            }
-                        });
-                    }
-                    else {
-                        mAppExecutors.getmMainThread().execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                initializeThumbnail(Uri.parse(mStep.getThumbnailUrl()));
-                            }
-                        });
+                else {
+                    try {
+                        URL url = urlConnection.getURL();
+                        Uri uri = Uri.parse(url.toString());
+                        initializeThumbnail(uri);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             }
         });
+
+        isPopulatingData = true;
     }
 
-    private Boolean isVideo(String urlString) {
+    private LiveData<URLConnection> getMediaUrl(Step step) {
+        final MutableLiveData<URLConnection> mutableLiveData = new MutableLiveData<>();
+
+        if (step.getVideoUrl() != null) {
+            final String videoUrl = step.getVideoUrl();
+
+            if(! videoUrl.isEmpty()) {
+                mAppExecutors.getmNetworkIo().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isInternetConnectionAvailable()) {
+                            return;
+                        }
+
+                        URLConnection urlConnection = getMediaConnection(videoUrl);
+                        if (urlConnection != null) {
+                            mutableLiveData.postValue(urlConnection);
+                        }
+                    }
+                });
+            }
+        }
+
+        if (step.getThumbnailUrl() != null) {
+            final String mediaUrl = step.getThumbnailUrl();
+
+            if(! mediaUrl.isEmpty()) {
+                mAppExecutors.getmNetworkIo().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isInternetConnectionAvailable()) {
+                            return;
+                        }
+
+                        URLConnection urlConnection = getMediaConnection(mediaUrl);
+                        if (urlConnection != null) {
+                            mutableLiveData.postValue(urlConnection);
+                        }
+                    }
+                });
+            }
+        }
+
+        return mutableLiveData;
+    }
+
+    private URLConnection getMediaConnection(String urlString) {
         try {
             URL url = new URL(urlString);
             URLConnection u = url.openConnection();
             long length = Long.parseLong(u.getHeaderField("Content-Length"));
             String type = u.getHeaderField("Content-Type");
-            Log.v("isVideo", type);
 
-            if(type.equals("video/mp4")) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return u;
         } catch (IOException e) {
-            return false;
+            return null;
         }
     }
 
